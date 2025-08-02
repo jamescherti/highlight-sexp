@@ -1,4 +1,4 @@
-;;; highlight-sexp.el --- highlight current zone according to its context
+;;; highlight-sexp.el --- highlight current zone according to its context -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2011-2014 Grégoire Jadi
 
@@ -29,7 +29,7 @@
 ;;; Code:
 
 (defgroup highlight-sexp nil
-  "Highlight sexp"
+  "Highlight sexp."
   :group 'faces
   :group 'matching)
 
@@ -45,7 +45,7 @@
 
 (defcustom hl-sexp-foreground-color
   nil
-  "*The color used for the foreground of the highlighted sexp"
+  "*The color used for the foreground of the highlighted sexp."
   :type 'color
   :group 'highlight-sexp)
 
@@ -53,15 +53,17 @@
 (defcustom hl-sexp-face
   nil
   "*The face used for the highlighted sexp."
+  :type 'face
   :group 'highlight-sexp)
 
 ;;;###autoload
 (define-minor-mode highlight-sexp-mode
-  "Minor mode to highlight the current zone according to its
-    context, i.e. sexp, comment, string."
-  nil
-  " hl-sexp"
-  nil
+  "Minor mode to highlight the current zone according to its context.
+For instance: sexp, comment, string."
+  :lighter " hl-sexp"
+  :global nil
+  :keymap nil
+  :group 'highlight-sexp
   (if highlight-sexp-mode
       (progn
         (hl-sexp-create-overlay)
@@ -70,8 +72,7 @@
     (hl-sexp-delete-overlay)
     (kill-local-variable 'hl-sexp-overlay)
     (remove-hook 'post-command-hook 'hl-sexp-highlight t)
-    (remove-hook 'clone-indirect-buffer-hook 'hl-sexp-handle-clone-indirect-buffer t))
-  )
+    (remove-hook 'clone-indirect-buffer-hook 'hl-sexp-handle-clone-indirect-buffer t)))
 
 ;;;###autoload
 (define-globalized-minor-mode global-highlight-sexp-mode
@@ -80,11 +81,13 @@
     (highlight-sexp-mode t)))
 
 (defun hl-sexp-delete-overlay ()
+  "Delete `highlight-sexp' overlay."
   (if hl-sexp-overlay
       (delete-overlay hl-sexp-overlay))
   (setq hl-sexp-overlay nil))
 
 (defun hl-sexp-highlight ()
+  "`highlight-sexp' highlight."
   (let ((text-property (get-text-property (point) 'face)))
     ;; HACKY HACK: just in case, this avoid to go further.
     (cond ((or (eq text-property 'font-lock-string-face)
@@ -112,6 +115,7 @@
                        (t (move-overlay hl-sexp-overlay 0 0))))))))))
 
 (defun hl-sexp-create-overlay ()
+  "Create `highlight-sexp' overlay."
   (let ((attribute (face-attr-construct 'hl-sexp-face)))
     (if hl-sexp-foreground-color
         (setq attribute (plist-put attribute :foreground hl-sexp-foreground-color)))
@@ -121,7 +125,7 @@
     (overlay-put hl-sexp-overlay 'face attribute)))
 
 (defun hl-sexp-handle-clone-indirect-buffer ()
-  "Set hl-sexp-overlay correctly when the buffer is cloned."
+  "Set `hl-sexp-overlay' correctly when the buffer is cloned."
   (set (make-local-variable 'hl-sexp-overlay) (copy-overlay hl-sexp-overlay))
   (move-overlay hl-sexp-overlay
                 (overlay-start hl-sexp-overlay)
